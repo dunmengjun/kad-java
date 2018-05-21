@@ -15,12 +15,29 @@
 + *k桶*:一个table 横向代表当前深度的子树中离自己最近(异或距离)的n个节点,竖向代表，树的深度(一般根据选择的散列算法决定)
 
 ####1.node结构关键信息
-| 字段 | 字段解释 |
-| :--- | :--- |
-| nodeId |  节点ID |
-| ip,port       |  ip地址和端口信息 |
-| data(map<key,value>) | 节点存储的数据|
-| k-bucket | k桶(BitTorrent的实现中取值为8)
+
+<table>
+  <tr>
+    <th>字段</td>
+    <th>字段解释</td>
+  </tr>
+  <tr>
+        <td>nodeId</td>
+        <td>节点ID</td>
+  </tr>
+  <tr>
+        <td>ip,port</td>
+        <td>ip地址和端口信息</td>
+    </tr>
+  <tr>
+        <td>data(map<key,value>)</td>
+        <td>节点存储的数据</td>
+  </tr>
+  <tr>
+        <td>k-bucket</td>
+        <td>k桶(BitTorrent的实现中取值为8)</td>
+  </tr>
+</table>
 
 ####2.node的四个操作
   + *PING*: 探测一个节点是否在线
