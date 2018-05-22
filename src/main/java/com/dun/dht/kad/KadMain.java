@@ -1,8 +1,13 @@
 package com.dun.dht.kad;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class KadMain {
 
+    private static final Logger logger = LoggerFactory.getLogger(KadMain.class);
+
     public static void main(String[] args) {
-        System.out.println("kad-java...");
+        logger.info("server start....");
     }
 }
