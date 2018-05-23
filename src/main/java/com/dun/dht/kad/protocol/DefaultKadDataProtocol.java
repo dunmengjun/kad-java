@@ -1,6 +1,7 @@
 package com.dun.dht.kad.protocol;
 
 import com.dun.dht.kad.network.Network;
+import com.dun.dht.kad.utils.SerializationUtil;
 
 /**
  * @author mjdun
@@ -9,18 +10,33 @@ import com.dun.dht.kad.network.Network;
  */
 public class DefaultKadDataProtocol implements KadDataProtocol {
 
-    private Network network = Network.getInstance();
+    private Network network;
+
+
+    private static KadDataProtocol instance = new DefaultKadDataProtocol();
+
+    private DefaultKadDataProtocol(){
+        network = Network.getInstance();
+    }
+
+    public static KadDataProtocol getInstance(){
+        return instance;
+    }
 
     @Override
-    public KadCommandResult call(KadCommand command) throws InterruptedException {
+    public KadCommandResult call(KadCommand command) {
         KadBaseInfo kadBaseInfo = command.targetBaseInfo();
-        byte[] result = network.send(kadBaseInfo.getInetSocketAddress(), command.bytes());
-        KadCommandResult decode = KadResultUtil.decode(result);
+        byte[] result = network.send(kadBaseInfo.getInetSocketAddress(), SerializationUtil.asBytes(command));
+        KadCommandResult decode = SerializationUtil.asObject(result);
         return decode;
     }
 
     @Override
     public void accpetCommand(KadCommandAccpeter kadCommandAccpeter) {
-        network.accpetHandler((inetSocketAddress,bytes) -> kadCommandAccpeter.accpet(KadCommandUtil.decode(bytes)));
+        network.accpetHandler((inetSocketAddress, bytes) -> kadCommandAccpeter.accpet(SerializationUtil.asObject(bytes)));
+    }
+
+    public void setNetwork(Network network) {
+        this.network = network;
     }
 }

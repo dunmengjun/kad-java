@@ -2,9 +2,11 @@ package com.dun.dht.kad.network.netty;
 
 import com.dun.dht.kad.network.Network;
 import com.dun.dht.kad.network.NetworkAccpetHandler;
+import com.dun.dht.kad.utils.SerializationUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,6 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * netty实现
@@ -28,13 +34,18 @@ public class NettyUdpNetwork implements Network {
 
     private Integer port = 9999;
 
+    private Map<String,Response> map;
+
     private static Network instance;
+
+    private long timeout = 10000;
 
     private NettyUdpNetwork() {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
-            udpServerHandler = new UdpServerHandler();
+            map = new ConcurrentHashMap<>();
+            udpServerHandler = new UdpServerHandler(map);
             bootstrap.group(group)
                     .channel(NioDatagramChannel.class)
                     .option(ChannelOption.SO_BROADCAST, true)
@@ -65,11 +76,25 @@ public class NettyUdpNetwork implements Network {
 
     @Override
     public byte[] send(InetSocketAddress address, byte[] data) {
-        udpChannel.writeAndFlush(
-                new DatagramPacket(Unpooled.copiedBuffer(data),
+        Request request = new Request(data);
+        CountDownLatch downLatch = new CountDownLatch(1);
+        Response response = new Response(request.getCallId(),downLatch);
+        map.put(request.getCallId(), response);
+        ChannelFuture channelFuture = udpChannel.writeAndFlush(
+                new DatagramPacket(Unpooled.copiedBuffer(SerializationUtil.asBytes(request)),
                         address)
         );
-        return null;
+        try {
+            downLatch.await(timeout,TimeUnit.MILLISECONDS);
+            map.remove(request.getCallId());
+            if(!channelFuture.isSuccess() || !channelFuture.isDone()){
+                //如果IO操作都不是成功的,或者没有完成
+                throw new RuntimeException("request is not success");
+            }
+            return response.getData();
+        } catch (InterruptedException e){
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

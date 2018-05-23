@@ -12,7 +12,7 @@ public interface Network {
      * @param data 数据
      * @return 返回的数据
      */
-    byte[] send(InetSocketAddress address, byte[] data);
+    byte[] send(InetSocketAddress address, byte[] data) ;
 
     /**
      * 被调用时设置处理方式

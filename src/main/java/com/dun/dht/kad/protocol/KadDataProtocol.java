@@ -10,4 +10,9 @@ public interface KadDataProtocol {
     KadCommandResult call(KadCommand command) throws InterruptedException;
 
     void accpetCommand(KadCommandAccpeter kadCommandAccpeter);
+
+
+    static KadDataProtocol getInstance(){
+        return DefaultKadDataProtocol.getInstance();
+    }
 }

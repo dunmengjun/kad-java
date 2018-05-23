@@ -13,9 +13,4 @@ public class KadCommandUtil {
     public static final KadCommand pintCommand(KadBaseInfo own,KadBaseInfo ping){
         return new PingCommand(own,ping);
     }
-
-
-    public static final KadCommand decode(byte[] data){
-        return null;
-    }
 }

@@ -24,9 +24,4 @@ public class PingCommand extends KadCommand {
     public KadBaseInfo targetBaseInfo() {
         return this.targetBaseInfo;
     }
-
-    @Override
-    public byte[] bytes() {
-        return new byte[0];
-    }
 }
