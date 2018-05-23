@@ -1,5 +1,7 @@
-package com.dun.dht.kad.network;
+package com.dun.dht.kad.network.netty;
 
+import com.dun.dht.kad.network.Network;
+import com.dun.dht.kad.network.NetworkAccpetHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -16,7 +18,7 @@ import java.net.InetSocketAddress;
 /**
  * netty实现
  */
-public class NettyUdpNetwork implements Network{
+public class NettyUdpNetwork implements Network {
 
     private final Logger logger = LoggerFactory.getLogger(NettyUdpNetwork.class);
 
@@ -26,9 +28,9 @@ public class NettyUdpNetwork implements Network{
 
     private Integer port = 9999;
 
-    private static final Network instance = new NettyUdpNetwork();
+    private static Network instance;
 
-    private NettyUdpNetwork(){
+    private NettyUdpNetwork() {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
@@ -46,24 +48,32 @@ public class NettyUdpNetwork implements Network{
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
             group.shutdownGracefully();
+            throw new RuntimeException(e);
         }
     }
 
 
     public static final Network getInstance(){
+        if(instance == null){
+            NettyUdpNetwork nettyUdpNetwork = new NettyUdpNetwork();
+            if(instance == null){
+                instance = nettyUdpNetwork;
+            }
+        }
         return instance;
     }
 
     @Override
-    public void sendData(String ip,int port, byte[] data) {
+    public byte[] send(InetSocketAddress address, byte[] data) {
         udpChannel.writeAndFlush(
                 new DatagramPacket(Unpooled.copiedBuffer(data),
-                        new InetSocketAddress(ip,port))
+                        address)
         );
+        return null;
     }
 
     @Override
-    public void applyAccpetCallback(NetworkDataCallback callback) {
-        udpServerHandler.setDataCallback(callback);
+    public void accpetHandler(NetworkAccpetHandler handler) {
+        udpServerHandler.setDataCallback(handler);
     }
 }

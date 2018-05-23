@@ -1,5 +1,6 @@
-package com.dun.dht.kad.network;
+package com.dun.dht.kad.network.netty;
 
+import com.dun.dht.kad.network.NetworkAccpetHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -9,9 +10,9 @@ import java.net.InetSocketAddress;
 
 public class UdpServerHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
-    private NetworkDataCallback dataCallback = null;
+    private NetworkAccpetHandler dataCallback = null;
 
-    public void setDataCallback(NetworkDataCallback dataCallback) {
+    public void setDataCallback(NetworkAccpetHandler dataCallback) {
         this.dataCallback = dataCallback;
     }
 
@@ -24,7 +25,7 @@ public class UdpServerHandler extends SimpleChannelInboundHandler<DatagramPacket
             byte[] buffer = new byte[size];
             content.readBytes(buffer);
             InetSocketAddress sender = msg.sender();
-            dataCallback.accpet(sender.getHostName(),sender.getPort(),buffer);
+            dataCallback.accpet(msg.sender(),buffer);
         }
 //        if ("hello!!!".equals(req)) {
 //            ctx.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(
